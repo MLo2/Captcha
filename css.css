@@ -1,0 +1,26 @@
+python main.py
+@app.route('/', methods=['GET', 'POST'])
+def index():
+    message = ''
+    if request.method == 'POST':
+        user_captcha_response = request.form.get('captcha')
+        correct_captcha = request.form.get('correct_captcha')
+        if user_captcha_response == correct_captcha:
+            message = 'كبتشاء صحيح!'
+        else:
+            message = 'كبتشاء خاطئ، حاول مرة أخرى.'
+
+    captcha_text, data = generate_captcha()
+    encoded_data = base64.b64encode(data.getvalue()).decode()
+    html = '''
+    <h1>مرحبًا بك في موقعنا</h1>
+    <p>الرجاء إدخال النص الموجود في الصورة أدناه للمتابعة:</p>
+    <img src="data:image/png;base64,{}" /><br/>
+    <form action="/" method="post">
+        <input type="hidden" name="correct_captcha" value="{}">
+        <input type="text" name="captcha" placeholder="أدخل الكود هنا">
+        <button type="submit">تحقق</button>
+    </form>
+    <p style="color:{};">{}</p>
+    '''.format(encoded_data, captcha_text, 'green' if message.startswith('كبتشاء صحيح') else 'red', message)
+    return html
